@@ -1,7 +1,7 @@
 from copyreg import constructor
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, Optional
-from interface import StorageInterface
+from .interface import StorageInterface
 
 class QueueEmptyError(Exception):
     """Исключение, вызываемое при попытке удалить элемент из пустой очереди."""
@@ -96,9 +96,10 @@ class TxtStorage(StorageInterface):
                         while typed_key >= len(parent):
                             parent.append(None)
 
-                    if isinstance(parent, dict) and typed_key not in parent.keys() or isinstance(parent, list):
+                    if isinstance(parent, dict) and parent.get(typed_key, None) is None or isinstance(parent, list) and parent[typed_key] is None:
                         parent[typed_key] = constructor(value) if index == len(key_parts) - 1 else constructor()
 
                     parent = parent[typed_key]
+
 
         return data
