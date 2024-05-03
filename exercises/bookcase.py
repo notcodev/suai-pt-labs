@@ -73,7 +73,7 @@ class Bookcase:
         }
         storage.save(data, filename)
 
-h    def load_state(self, storage: StorageInterface, filename: str):
+    def load_state(self, storage: StorageInterface, filename: str):
         data = storage.load(filename)
         self._max_weight = data["max_weight"]
         self._books = [
