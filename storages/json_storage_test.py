@@ -1,33 +1,33 @@
-import json
 import unittest
-import os
+from unittest.mock import mock_open, patch
 
 from .json_storage import JsonStorage
 
+class TestJSONStorage(unittest.TestCase):
 
-class TestJsonStorage(unittest.TestCase):
-    def setUp(self):
-        self.storage = JsonStorage()
-        self.test_data = {'key1': 'value1', 'key2': 'value2'}
-        self.filename = 'test_data.json'
+    @patch('builtins.open', new_callable=mock_open)
+    @patch('json.dump')
+    def test_save(self, mock_json_dump, mock_file):
+        storage = JsonStorage()
+        data = {'item1': 'description1', 'item2': 'description2'}
 
-    def tearDown(self):
-        if os.path.exists(self.filename):
-            os.remove(self.filename)
+        storage.save(data, 'mockfile.json')
 
-    def test_save(self):
-        self.storage.save(self.test_data, self.filename)
-        self.assertTrue(os.path.exists(self.filename))
-        with open(self.filename, 'r') as file:
-            saved_data = json.load(file)
-            self.assertEqual(saved_data, self.test_data)
+        mock_file.assert_called_once_with('mockfile.json', 'w')
+        mock_json_dump.assert_called_once_with(data, mock_file(), indent=4)
 
-    def test_load(self):
-        with open(self.filename, 'w') as file:
-            json.dump(self.test_data, file)
-        loaded_data = self.storage.load(self.filename)
-        self.assertEqual(loaded_data, self.test_data)
+    @patch('builtins.open', new_callable=mock_open, read_data='{"item1": "description1", "item2": "description2"}')
+    @patch('json.load')
+    def test_load(self, mock_json_load, mock_file):
+        storage = JsonStorage()
+        expected_data = {'item1': 'description1', 'item2': 'description2'}
+        mock_json_load.return_value = expected_data
 
+        data = storage.load('mockfile.json')
+
+        mock_file.assert_called_once_with('mockfile.json', 'r')
+        mock_json_load.assert_called_once_with(mock_file())
+        self.assertEqual(data, expected_data)
 
 if __name__ == '__main__':
     unittest.main()
