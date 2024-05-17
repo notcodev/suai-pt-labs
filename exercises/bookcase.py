@@ -67,8 +67,7 @@ class Bookcase:
         data = {
             "max_weight": self._max_weight,
             "books": [
-                {"title": book.title, "author": book.author, "weight": book.weight, "cost": book.cost}
-                for book in self._books
+                book._asdict() for book in self._books
             ]
         }
         storage.save(data, filename)
@@ -77,6 +76,10 @@ class Bookcase:
         data = storage.load(filename)
         self._max_weight = data["max_weight"]
         self._books = [
-            Book(title=book["title"], author=book["author"], weight=book["weight"], cost=book["cost"])
-            for book in data["books"]
+            Book(**book) for book in data["books"]
         ]
+        self._current_cost = sum(map(lambda book: book.cost, self._books))
+        self._current_weight = sum(map(lambda book: book.weight, self._books))
+
+        if self._current_weight> self._max_weight:
+            raise MaxWeightExceededError('Unable to load: Max weight of bookcase exceeded')
